@@ -1,6 +1,9 @@
 {
   "name": "coffex-monorepo",
   "private": true,
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "pnpm --parallel --filter @coffex/api --filter @coffex/web dev",
     "dev:web": "pnpm --filter @coffex/web dev",

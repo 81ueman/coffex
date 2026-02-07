@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
-async function createLog(page: import("@playwright/test").Page, beanName: string) {
+async function createLog(page: Page, beanName: string) {
   await page.goto("/new");
 
   await page.getByLabel("豆名").fill(beanName);
