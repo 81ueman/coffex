@@ -113,6 +113,34 @@ describe("coffee logs API", () => {
     expect(deleted.success).toBe(true);
   });
 
+  it("gets a single log by id", async () => {
+    const app = setup();
+
+    const createResponse = await app.request(
+      "/api/logs",
+      new Request("http://localhost/api/logs", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(createPayload({ beanName: "Detail Target" })),
+      }),
+    );
+    const created = (await createResponse.json()) as { id: string };
+
+    const response = await app.request(`/api/logs/${created.id}`);
+    expect(response.status).toBe(200);
+
+    const payload = (await response.json()) as { id: string; beanName: string };
+    expect(payload.id).toBe(created.id);
+    expect(payload.beanName).toBe("Detail Target");
+  });
+
+  it("returns 404 when target log does not exist", async () => {
+    const app = setup();
+
+    const response = await app.request("/api/logs/550e8400-e29b-41d4-a716-446655440000");
+    expect(response.status).toBe(404);
+  });
+
   it("returns health response", async () => {
     const app = setup();
 
@@ -176,6 +204,13 @@ describe("coffee logs API", () => {
       new Request("http://localhost/api/logs/not-a-uuid", { method: "DELETE" }),
     );
 
+    expect(response.status).toBe(400);
+  });
+
+  it("rejects invalid get param", async () => {
+    const app = setup();
+
+    const response = await app.request("/api/logs/not-a-uuid");
     expect(response.status).toBe(400);
   });
 });
