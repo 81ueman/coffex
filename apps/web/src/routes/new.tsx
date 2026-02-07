@@ -1,5 +1,10 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import type { BrewMethod, RoastLevel } from "@/features/coffee/types";
+import type {
+  NewLogFormErrors,
+  NewLogFormValues,
+} from "@/features/coffee/new-log-form";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,13 +21,9 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   BREW_METHODS,
   ROAST_LEVELS,
-  type BrewMethod,
-  type RoastLevel,
 } from "@/features/coffee/types";
 import {
   initialNewLogFormValues,
-  type NewLogFormErrors,
-  type NewLogFormValues,
   validateAndBuildPayload,
 } from "@/features/coffee/new-log-form";
 import { useCoffeeLogs } from "@/features/coffee/use-coffee-logs";

@@ -1,6 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Trash2Icon } from "lucide-react";
 import { useMemo, useState } from "react";
+import type { BrewMethod, RoastLevel } from "@/features/coffee/types";
 
 import {
   AlertDialog,
@@ -42,8 +43,6 @@ import {
 import {
   BREW_METHODS,
   ROAST_LEVELS,
-  type BrewMethod,
-  type RoastLevel,
 } from "@/features/coffee/types";
 import { calculateKpis, filterLogs } from "@/features/coffee/dashboard-logic";
 import { useCoffeeLogs } from "@/features/coffee/use-coffee-logs";

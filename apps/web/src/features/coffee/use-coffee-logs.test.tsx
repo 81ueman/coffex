@@ -1,5 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { useCoffeeLogs as UseCoffeeLogsType } from "@/features/coffee/use-coffee-logs";
 
 const { getLogsMock, createLogMock, deleteLogMock } = vi.hoisted(() => ({
   getLogsMock: vi.fn(),
@@ -25,7 +26,7 @@ vi.mock("@/lib/api-client", () => ({
   },
 }));
 
-import { useCoffeeLogs } from "@/features/coffee/use-coffee-logs";
+let useCoffeeLogs: typeof UseCoffeeLogsType;
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -35,8 +36,9 @@ function jsonResponse(body: unknown, status = 200): Response {
 }
 
 describe("useCoffeeLogs", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    ({ useCoffeeLogs } = await import("@/features/coffee/use-coffee-logs"));
   });
 
   it("loads logs on mount and hydrates state", async () => {

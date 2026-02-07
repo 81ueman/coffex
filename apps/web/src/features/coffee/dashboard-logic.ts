@@ -1,4 +1,4 @@
-import type { CoffeeLog, BrewMethod, RoastLevel } from "@/features/coffee/types";
+import type { BrewMethod, CoffeeLog, RoastLevel } from "@/features/coffee/types";
 
 export type DashboardFilters = {
   beanQuery: string;
@@ -8,7 +8,7 @@ export type DashboardFilters = {
   endDate: string;
 };
 
-export function filterLogs(logs: CoffeeLog[], filters: DashboardFilters): CoffeeLog[] {
+export function filterLogs(logs: Array<CoffeeLog>, filters: DashboardFilters): Array<CoffeeLog> {
   return logs.filter((log) => {
     const date = log.recordedAt.slice(0, 10);
 
@@ -39,7 +39,7 @@ export function filterLogs(logs: CoffeeLog[], filters: DashboardFilters): Coffee
   });
 }
 
-export function calculateKpis(logs: CoffeeLog[], now = Date.now()) {
+export function calculateKpis(logs: Array<CoffeeLog>, now = Date.now()) {
   const total = logs.length;
   const averageScore = total === 0 ? 0 : logs.reduce((sum, log) => sum + log.tasteScore, 0) / total;
   const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
