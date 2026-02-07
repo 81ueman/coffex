@@ -17,6 +17,7 @@ function createLog(overrides?: Partial<CoffeeLog>): CoffeeLog {
     waterAmountMl: 240,
     brewTimeSec: 180,
     waterTempC: 92,
+    extractionSteps: [{ pourAmountG: 240, waitSec: 180 }],
     grindMemo: "",
     tasteScore: 84,
     tasteMemo: "",

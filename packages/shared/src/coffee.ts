@@ -13,6 +13,11 @@ export const BREW_METHODS = [
 
 export const roastLevelSchema = z.enum(ROAST_LEVELS);
 export const brewMethodSchema = z.enum(BREW_METHODS);
+export const extractionStepSchema = z.object({
+  pourAmountG: z.number().int().min(1).max(1000),
+  waitSec: z.number().int().min(0).max(900),
+});
+export const extractionStepsSchema = z.array(extractionStepSchema).min(1).max(10);
 
 export const coffeeLogInputSchema = z.object({
   beanName: z.string().trim().min(1),
@@ -25,6 +30,7 @@ export const coffeeLogInputSchema = z.object({
   waterAmountMl: z.number().int().min(50).max(1000),
   brewTimeSec: z.number().int().min(30).max(900),
   waterTempC: z.number().int().min(70).max(100),
+  extractionSteps: extractionStepsSchema,
   grindMemo: z.string(),
   tasteScore: z.number().int().min(0).max(100),
   tasteMemo: z.string(),
@@ -56,6 +62,7 @@ export const logIdParamsSchema = z.object({
 
 export type RoastLevel = z.infer<typeof roastLevelSchema>;
 export type BrewMethod = z.infer<typeof brewMethodSchema>;
+export type ExtractionStep = z.infer<typeof extractionStepSchema>;
 export type CoffeeLogInput = z.infer<typeof coffeeLogInputSchema>;
 export type CoffeeLog = z.infer<typeof coffeeLogSchema>;
 export type ListLogsQuery = z.infer<typeof listLogsQuerySchema>;

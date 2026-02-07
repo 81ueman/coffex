@@ -50,6 +50,7 @@ export class CoffeeLogsRepository {
       waterAmountMl: nextLog.waterAmountMl,
       brewTimeSec: nextLog.brewTimeSec,
       waterTempC: nextLog.waterTempC,
+      extractionSteps: JSON.stringify(nextLog.extractionSteps),
       grindMemo: nextLog.grindMemo,
       tasteScore: nextLog.tasteScore,
       tasteMemo: nextLog.tasteMemo,

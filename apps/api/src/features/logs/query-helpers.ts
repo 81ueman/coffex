@@ -1,7 +1,24 @@
-import type { CoffeeLog, ListLogsQuery } from "@coffex/shared/coffee";
+import { extractionStepsSchema, type CoffeeLog, type ListLogsQuery } from "@coffex/shared/coffee";
 import { and, eq, gte, like, lte, sql } from "drizzle-orm";
 
 import { coffeeLogs } from "../../db/schema";
+
+function parseExtractionSteps(
+  serialized: string,
+  fallback: { pourAmountG: number; waitSec: number },
+): CoffeeLog["extractionSteps"] {
+  try {
+    const parsed = JSON.parse(serialized) as unknown;
+    const result = extractionStepsSchema.safeParse(parsed);
+    if (result.success) {
+      return result.data;
+    }
+  } catch {
+    // no-op, fallback below
+  }
+
+  return [fallback];
+}
 
 export function rowToCoffeeLog(row: typeof coffeeLogs.$inferSelect): CoffeeLog {
   return {
@@ -17,6 +34,10 @@ export function rowToCoffeeLog(row: typeof coffeeLogs.$inferSelect): CoffeeLog {
     waterAmountMl: row.waterAmountMl,
     brewTimeSec: row.brewTimeSec,
     waterTempC: row.waterTempC,
+    extractionSteps: parseExtractionSteps(row.extractionSteps, {
+      pourAmountG: row.waterAmountMl,
+      waitSec: row.brewTimeSec,
+    }),
     grindMemo: row.grindMemo,
     tasteScore: row.tasteScore,
     tasteMemo: row.tasteMemo,
