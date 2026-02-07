@@ -1,6 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Trash2Icon } from "lucide-react";
 import { useMemo, useState } from "react";
+import type { BrewMethod, RoastLevel } from "@/features/coffee/types";
 
 import {
   AlertDialog,
@@ -39,7 +40,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { BREW_METHODS, ROAST_LEVELS } from "@/features/coffee/types";
+import {
+  BREW_METHODS,
+  ROAST_LEVELS,
+} from "@/features/coffee/types";
+import { calculateKpis, filterLogs } from "@/features/coffee/dashboard-logic";
 import { useCoffeeLogs } from "@/features/coffee/use-coffee-logs";
 
 export const Route = createFileRoute("/")({ component: DashboardPage });
@@ -56,64 +61,22 @@ function DashboardPage() {
   const { logs, isHydrated, deleteLogRecord } = useCoffeeLogs();
 
   const [beanQuery, setBeanQuery] = useState("");
-  const [roastLevel, setRoastLevel] = useState<string>("all");
-  const [brewMethod, setBrewMethod] = useState<string>("all");
+  const [roastLevel, setRoastLevel] = useState<RoastLevel | "all">("all");
+  const [brewMethod, setBrewMethod] = useState<BrewMethod | "all">("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
   const filteredLogs = useMemo(() => {
-    return logs.filter((log) => {
-      const date = log.recordedAt.slice(0, 10);
-
-      if (
-        beanQuery.trim().length > 0 &&
-        !log.beanName.toLowerCase().includes(beanQuery.trim().toLowerCase())
-      ) {
-        return false;
-      }
-
-      if (roastLevel !== "all" && log.roastLevel !== roastLevel) {
-        return false;
-      }
-
-      if (brewMethod !== "all" && log.brewMethod !== brewMethod) {
-        return false;
-      }
-
-      if (startDate && date < startDate) {
-        return false;
-      }
-
-      if (endDate && date > endDate) {
-        return false;
-      }
-
-      return true;
+    return filterLogs(logs, {
+      beanQuery,
+      roastLevel,
+      brewMethod,
+      startDate,
+      endDate,
     });
   }, [beanQuery, brewMethod, endDate, logs, roastLevel, startDate]);
 
-  const kpis = useMemo(() => {
-    const total = logs.length;
-    const averageScore =
-      total === 0
-        ? 0
-        : logs.reduce((sum, log) => sum + log.tasteScore, 0) / total;
-    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    const last7Days = logs.filter(
-      (log) => new Date(log.recordedAt).getTime() >= sevenDaysAgo,
-    ).length;
-    const bestScore =
-      total === 0
-        ? 0
-        : logs.reduce((best, log) => Math.max(best, log.tasteScore), 0);
-
-    return {
-      total,
-      averageScore,
-      last7Days,
-      bestScore,
-    };
-  }, [logs]);
+  const kpis = useMemo(() => calculateKpis(logs), [logs]);
 
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 md:px-8">

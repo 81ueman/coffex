@@ -1,7 +1,11 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import type { BrewMethod, RoastLevel } from "@/features/coffee/types";
+import type {
+  NewLogFormErrors,
+  NewLogFormValues,
+} from "@/features/coffee/new-log-form";
 
-import type {BrewMethod, CoffeeLogInput, RoastLevel} from "@/features/coffee/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -16,130 +20,36 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   BREW_METHODS,
-  
-  
-  ROAST_LEVELS
-  
+  ROAST_LEVELS,
 } from "@/features/coffee/types";
+import {
+  initialNewLogFormValues,
+  validateAndBuildPayload,
+} from "@/features/coffee/new-log-form";
 import { useCoffeeLogs } from "@/features/coffee/use-coffee-logs";
 
 export const Route = createFileRoute("/new")({ component: NewLogPage });
-
-type FormValues = {
-  beanName: string;
-  origin: string;
-  roastLevel: RoastLevel;
-  roastMemo: string;
-  daysSinceRoast: string;
-  brewMethod: BrewMethod;
-  beanAmountG: string;
-  waterAmountMl: string;
-  brewTimeSec: string;
-  waterTempC: string;
-  grindMemo: string;
-  tasteScore: string;
-  tasteMemo: string;
-};
-
-type FormErrors = Partial<Record<keyof FormValues, string>>;
-
-const initialValues: FormValues = {
-  beanName: "",
-  origin: "",
-  roastLevel: "中煎り",
-  roastMemo: "",
-  daysSinceRoast: "",
-  brewMethod: "V60",
-  beanAmountG: "",
-  waterAmountMl: "",
-  brewTimeSec: "",
-  waterTempC: "",
-  grindMemo: "",
-  tasteScore: "",
-  tasteMemo: "",
-};
 
 function NewLogPage() {
   const navigate = useNavigate();
   const { addLogRecord } = useCoffeeLogs();
 
-  const [values, setValues] = useState<FormValues>(initialValues);
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [values, setValues] = useState<NewLogFormValues>(initialNewLogFormValues);
+  const [errors, setErrors] = useState<NewLogFormErrors>({});
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    const nextErrors: FormErrors = {};
-
-    if (!values.beanName.trim()) {
-      nextErrors.beanName = "豆名は必須です。";
-    }
-
-    let daysSinceRoast: number | null = null;
-    if (values.daysSinceRoast.trim() !== "") {
-      const parsedDaysSinceRoast = Number(values.daysSinceRoast);
-      if (
-        !Number.isFinite(parsedDaysSinceRoast) ||
-        parsedDaysSinceRoast < 0 ||
-        parsedDaysSinceRoast > 365
-      ) {
-        nextErrors.daysSinceRoast = "焙煎後日数は0〜365で入力してください。";
-      } else {
-        daysSinceRoast = parsedDaysSinceRoast;
-      }
-    }
-
-    const waterAmountMl = Number(values.waterAmountMl);
-    if (!Number.isFinite(waterAmountMl) || waterAmountMl < 50 || waterAmountMl > 1000) {
-      nextErrors.waterAmountMl = "湯量は50〜1000mlで入力してください。";
-    }
-
-    const brewTimeSec = Number(values.brewTimeSec);
-    if (!Number.isFinite(brewTimeSec) || brewTimeSec < 30 || brewTimeSec > 900) {
-      nextErrors.brewTimeSec = "時間は30〜900秒で入力してください。";
-    }
-
-    const waterTempC = Number(values.waterTempC);
-    if (!Number.isFinite(waterTempC) || waterTempC < 70 || waterTempC > 100) {
-      nextErrors.waterTempC = "温度は70〜100℃で入力してください。";
-    }
-
-    const tasteScore = Number(values.tasteScore);
-    if (!Number.isFinite(tasteScore) || tasteScore < 0 || tasteScore > 100) {
-      nextErrors.tasteScore = "点数は0〜100で入力してください。";
-    }
-
-    const beanAmountG = Number(values.beanAmountG);
-    if (!Number.isFinite(beanAmountG) || beanAmountG < 1 || beanAmountG > 100) {
-      nextErrors.beanAmountG = "豆量は1〜100gで入力してください。";
-    }
-
-    if (Object.keys(nextErrors).length > 0) {
-      setErrors(nextErrors);
+    const result = validateAndBuildPayload(values);
+    if (Object.keys(result.errors).length > 0 || !result.payload) {
+      setErrors(result.errors);
       return;
     }
 
-    const payload: CoffeeLogInput = {
-      beanName: values.beanName.trim(),
-      origin: values.origin.trim(),
-      roastLevel: values.roastLevel,
-      roastMemo: values.roastMemo.trim(),
-      daysSinceRoast,
-      brewMethod: values.brewMethod,
-      beanAmountG,
-      waterAmountMl,
-      brewTimeSec,
-      waterTempC,
-      grindMemo: values.grindMemo.trim(),
-      tasteScore,
-      tasteMemo: values.tasteMemo.trim(),
-    };
-
-    await addLogRecord(payload);
+    await addLogRecord(result.payload);
     navigate({ to: "/" });
   };
 
-  const updateValue = <T extends keyof FormValues>(key: T, value: FormValues[T]) => {
+  const updateValue = <T extends keyof NewLogFormValues>(key: T, value: NewLogFormValues[T]) => {
     setValues((current) => ({ ...current, [key]: value }));
     setErrors((current) => ({ ...current, [key]: undefined }));
   };

@@ -112,4 +112,70 @@ describe("coffee logs API", () => {
     const deleted = (await deleteResponse.json()) as { success: boolean };
     expect(deleted.success).toBe(true);
   });
+
+  it("returns health response", async () => {
+    const app = setup();
+
+    const response = await app.request("/api/health");
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true });
+  });
+
+  it("rejects invalid payload", async () => {
+    const app = setup();
+    const invalidPayload = {
+      ...createPayload(),
+      beanName: "   ",
+      tasteScore: 101,
+    };
+
+    const response = await app.request(
+      "/api/logs",
+      new Request("http://localhost/api/logs", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(invalidPayload),
+      }),
+    );
+
+    expect(response.status).toBe(400);
+  });
+
+  it("rejects invalid query", async () => {
+    const app = setup();
+
+    const response = await app.request("/api/logs?limit=1000&offset=-1");
+    expect(response.status).toBe(400);
+  });
+
+  it("uses default query parameters for list logs", async () => {
+    const app = setup();
+
+    await app.request(
+      "/api/logs",
+      new Request("http://localhost/api/logs", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(createPayload({ beanName: "Default Query Target" })),
+      }),
+    );
+
+    const response = await app.request("/api/logs");
+    expect(response.status).toBe(200);
+
+    const payload = (await response.json()) as { items: Array<{ beanName: string }>; total: number };
+    expect(payload.total).toBe(1);
+    expect(payload.items[0]?.beanName).toBe("Default Query Target");
+  });
+
+  it("rejects invalid delete param", async () => {
+    const app = setup();
+
+    const response = await app.request(
+      "/api/logs/not-a-uuid",
+      new Request("http://localhost/api/logs/not-a-uuid", { method: "DELETE" }),
+    );
+
+    expect(response.status).toBe(400);
+  });
 });
