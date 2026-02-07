@@ -29,6 +29,7 @@ export function openSqliteDatabase(filePath: string) {
       water_amount_ml INTEGER NOT NULL,
       brew_time_sec INTEGER NOT NULL,
       water_temp_c INTEGER NOT NULL,
+      extraction_steps TEXT NOT NULL DEFAULT '[]',
       grind_memo TEXT NOT NULL DEFAULT '',
       taste_score INTEGER NOT NULL,
       taste_memo TEXT NOT NULL DEFAULT ''
@@ -37,6 +38,24 @@ export function openSqliteDatabase(filePath: string) {
     CREATE INDEX IF NOT EXISTS coffee_logs_recorded_at_idx ON coffee_logs(recorded_at);
     CREATE INDEX IF NOT EXISTS coffee_logs_roast_level_idx ON coffee_logs(roast_level);
     CREATE INDEX IF NOT EXISTS coffee_logs_brew_method_idx ON coffee_logs(brew_method);
+  `);
+
+  try {
+    sqlite.exec("ALTER TABLE coffee_logs ADD COLUMN extraction_steps TEXT NOT NULL DEFAULT '[]'");
+  } catch (error) {
+    if (!(error instanceof Error) || !error.message.includes("duplicate column name")) {
+      throw error;
+    }
+  }
+
+  sqlite.exec(`
+    UPDATE coffee_logs
+    SET extraction_steps = (
+      '[{"pourAmountG":' || water_amount_ml || ',"waitSec":' || brew_time_sec || '}]'
+    )
+    WHERE extraction_steps IS NULL
+      OR trim(extraction_steps) = ''
+      OR extraction_steps = '[]';
   `);
 
   return sqlite;

@@ -196,6 +196,7 @@ function DashboardPage() {
                 <TableHead>時間</TableHead>
                 <TableHead>温度</TableHead>
                 <TableHead>点数</TableHead>
+                <TableHead>抽出手順</TableHead>
                 <TableHead>メモ</TableHead>
                 <TableHead className="text-right">操作</TableHead>
               </TableRow>
@@ -203,7 +204,7 @@ function DashboardPage() {
             <TableBody>
               {filteredLogs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={12} className="text-muted-foreground py-8 text-center">
+                  <TableCell colSpan={13} className="text-muted-foreground py-8 text-center">
                     まだ記録がありません。新規記録を追加してください。
                   </TableCell>
                 </TableRow>
@@ -221,6 +222,40 @@ function DashboardPage() {
                     <TableCell>{log.waterTempC}℃</TableCell>
                     <TableCell>
                       <ScoreBadge score={log.tasteScore} />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">{log.extractionSteps.length}ステップ</Badge>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              詳細
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>抽出手順</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                豆名「{log.beanName}」の手順詳細です。
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <div className="space-y-2 text-sm">
+                              {log.extractionSteps.map((step, index) => (
+                                <p key={`${log.id}-step-${index}`}>
+                                  Step {index + 1}: 注湯 {step.pourAmountG}g → 待機 {step.waitSec}秒
+                                </p>
+                              ))}
+                              <p className="text-muted-foreground">
+                                合計: 注湯 {log.extractionSteps.reduce((sum, step) => sum + step.pourAmountG, 0)}g /
+                                待機 {log.extractionSteps.reduce((sum, step) => sum + step.waitSec, 0)}秒
+                              </p>
+                            </div>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>閉じる</AlertDialogCancel>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </TableCell>
                     <TableCell>
                       {log.roastMemo || log.grindMemo || log.tasteMemo ? (

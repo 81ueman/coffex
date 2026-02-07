@@ -26,6 +26,11 @@ async function createLog(
   await page.getByLabel("湯量(ml)").fill("300");
   await page.getByLabel("抽出時間(秒)").fill("165");
   await page.getByLabel("温度(℃)").fill("91");
+  await page.locator("#pourAmountG-0").fill("150");
+  await page.locator("#waitSec-0").fill("45");
+  await page.getByRole("button", { name: "行を追加" }).click();
+  await page.locator("#pourAmountG-1").fill("150");
+  await page.locator("#waitSec-1").fill("120");
   await page.getByLabel("味の点数(0-100)").fill(options?.tasteScore ?? "86");
   await page.getByLabel("味メモ").fill("甘みが強く、後味が良い");
 
@@ -51,6 +56,13 @@ test("新規作成した記録が一覧に表示される", async ({ page }) => 
 
   await expect(page.getByRole("cell", { name: beanName })).toBeVisible();
   await expect(page.getByRole("cell", { name: "86点" })).toBeVisible();
+  await expect(page.getByText("2ステップ")).toBeVisible();
+
+  const row = page.locator("tr", { hasText: beanName });
+  await row.getByRole("button", { name: "詳細" }).click();
+  await expect(page.getByText("Step 1: 注湯 150g → 待機 45秒")).toBeVisible();
+  await expect(page.getByText("Step 2: 注湯 150g → 待機 120秒")).toBeVisible();
+  await page.getByRole("button", { name: "閉じる" }).click();
 });
 
 test("記録を削除できる", async ({ page }) => {
@@ -85,6 +97,28 @@ test("新規作成フォームで必須・範囲バリデーションが表示�
   await expect(page.getByText("湯量は50〜1000mlで入力してください。")).toBeVisible();
   await expect(page.getByText("時間は30〜900秒で入力してください。")).toBeVisible();
   await expect(page.getByText("温度は70〜100℃で入力してください。")).toBeVisible();
+  await expect(page.getByText("Step 1 の注湯量は1〜1000gで入力してください。")).toBeVisible();
+  await expect(page.getByText("Step 1 の待機時間は0〜900秒で入力してください。")).toBeVisible();
+});
+
+test("抽出手順の合計不一致でバリデーションエラーになる", async ({ page }) => {
+  await page.goto("/new");
+
+  await page.getByLabel("豆名").fill("PW-INVALID-STEPS");
+  await page.getByLabel("豆量(g)").fill("18");
+  await page.getByLabel("湯量(ml)").fill("300");
+  await page.getByLabel("抽出時間(秒)").fill("165");
+  await page.getByLabel("温度(℃)").fill("91");
+  await page.getByLabel("味の点数(0-100)").fill("86");
+
+  await page.locator("#pourAmountG-0").fill("100");
+  await page.locator("#waitSec-0").fill("60");
+  await page.getByRole("button", { name: "行を追加" }).click();
+  await page.locator("#pourAmountG-1").fill("150");
+  await page.locator("#waitSec-1").fill("60");
+
+  await page.getByRole("button", { name: "保存する" }).click();
+  await expect(page.getByText("抽出手順の注湯量合計は湯量(ml)と一致させてください。")).toBeVisible();
 });
 
 test("絞り込み条件で表示件数が変わる", async ({ page }) => {

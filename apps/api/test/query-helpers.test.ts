@@ -41,6 +41,7 @@ describe("query helpers", () => {
       waterAmountMl: 240,
       brewTimeSec: 180,
       waterTempC: 92,
+      extractionSteps: '[{"pourAmountG":120,"waitSec":45},{"pourAmountG":120,"waitSec":135}]',
       grindMemo: "middle-fine",
       tasteScore: 88,
       tasteMemo: "sweet",
@@ -59,9 +60,59 @@ describe("query helpers", () => {
       waterAmountMl: 240,
       brewTimeSec: 180,
       waterTempC: 92,
+      extractionSteps: [
+        { pourAmountG: 120, waitSec: 45 },
+        { pourAmountG: 120, waitSec: 135 },
+      ],
       grindMemo: "middle-fine",
       tasteScore: 88,
       tasteMemo: "sweet",
     });
+  });
+
+  it("falls back to single-step extraction when persisted steps are empty", () => {
+    const mapped = rowToCoffeeLog({
+      id: "22222222-2222-4222-8222-222222222222",
+      recordedAt: "2026-01-01T01:02:03.000Z",
+      beanName: "Colombia",
+      origin: "Colombia",
+      roastLevel: "中煎り",
+      roastMemo: "",
+      daysSinceRoast: null,
+      brewMethod: "V60",
+      beanAmountG: 15,
+      waterAmountMl: 250,
+      brewTimeSec: 170,
+      waterTempC: 91,
+      extractionSteps: "[]",
+      grindMemo: "",
+      tasteScore: 80,
+      tasteMemo: "",
+    });
+
+    expect(mapped.extractionSteps).toEqual([{ pourAmountG: 250, waitSec: 170 }]);
+  });
+
+  it("falls back to single-step extraction when persisted steps are invalid JSON", () => {
+    const mapped = rowToCoffeeLog({
+      id: "33333333-3333-4333-8333-333333333333",
+      recordedAt: "2026-01-01T01:02:03.000Z",
+      beanName: "Brazil",
+      origin: "Brazil",
+      roastLevel: "中煎り",
+      roastMemo: "",
+      daysSinceRoast: null,
+      brewMethod: "V60",
+      beanAmountG: 15,
+      waterAmountMl: 220,
+      brewTimeSec: 160,
+      waterTempC: 91,
+      extractionSteps: "{not-json}",
+      grindMemo: "",
+      tasteScore: 80,
+      tasteMemo: "",
+    });
+
+    expect(mapped.extractionSteps).toEqual([{ pourAmountG: 220, waitSec: 160 }]);
   });
 });

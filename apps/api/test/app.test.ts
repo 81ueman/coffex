@@ -17,6 +17,7 @@ function createPayload(overrides?: Partial<CoffeeLogInput>): CoffeeLogInput {
     waterAmountMl: 240,
     brewTimeSec: 180,
     waterTempC: 92,
+    extractionSteps: [{ pourAmountG: 240, waitSec: 180 }],
     grindMemo: "middle-fine",
     tasteScore: 84,
     tasteMemo: "citrus and floral",
@@ -135,6 +136,22 @@ describe("coffee logs API", () => {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(invalidPayload),
+      }),
+    );
+
+    expect(response.status).toBe(400);
+  });
+
+  it("rejects payload without extraction steps", async () => {
+    const app = setup();
+    const { extractionSteps: _, ...payloadWithoutSteps } = createPayload();
+
+    const response = await app.request(
+      "/api/logs",
+      new Request("http://localhost/api/logs", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payloadWithoutSteps),
       }),
     );
 

@@ -16,6 +16,7 @@ function createPayload(overrides?: Partial<CoffeeLogInput>): CoffeeLogInput {
     waterAmountMl: 240,
     brewTimeSec: 180,
     waterTempC: 92,
+    extractionSteps: [{ pourAmountG: 240, waitSec: 180 }],
     grindMemo: "middle-fine",
     tasteScore: 84,
     tasteMemo: "citrus and floral",
@@ -51,6 +52,7 @@ describe("CoffeeLogsRepository", () => {
     const listed = await repository.list({ limit: 10, offset: 0, beanQuery: "Target" });
     expect(listed.total).toBe(1);
     expect(listed.items[0]?.beanName).toBe("Create Target");
+    expect(listed.items[0]?.extractionSteps).toEqual([{ pourAmountG: 240, waitSec: 180 }]);
   });
 
   it("supports filter combinations and keeps total aligned with filtered rows", async () => {

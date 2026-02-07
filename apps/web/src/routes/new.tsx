@@ -2,6 +2,7 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import type { BrewMethod, RoastLevel } from "@/features/coffee/types";
 import type {
+  ExtractionStepFormValue,
   NewLogFormErrors,
   NewLogFormValues,
 } from "@/features/coffee/new-log-form";
@@ -53,6 +54,66 @@ function NewLogPage() {
     setValues((current) => ({ ...current, [key]: value }));
     setErrors((current) => ({ ...current, [key]: undefined }));
   };
+
+  const updateExtractionStep = (
+    index: number,
+    key: keyof ExtractionStepFormValue,
+    value: string,
+  ) => {
+    setValues((current) => ({
+      ...current,
+      extractionSteps: current.extractionSteps.map((step, stepIndex) =>
+        stepIndex === index ? { ...step, [key]: value } : step,
+      ),
+    }));
+    setErrors((current) => ({
+      ...current,
+      extractionSteps: undefined,
+      extractionStepErrors: current.extractionStepErrors?.map((stepError, stepIndex) =>
+        stepIndex === index ? { ...stepError, [key]: undefined } : stepError,
+      ),
+    }));
+  };
+
+  const addExtractionStep = () => {
+    setValues((current) => {
+      if (current.extractionSteps.length >= 10) {
+        return current;
+      }
+
+      return {
+        ...current,
+        extractionSteps: [...current.extractionSteps, { pourAmountG: "", waitSec: "" }],
+      };
+    });
+    setErrors((current) => ({ ...current, extractionSteps: undefined }));
+  };
+
+  const removeExtractionStep = (index: number) => {
+    setValues((current) => {
+      if (current.extractionSteps.length <= 1) {
+        return current;
+      }
+
+      return {
+        ...current,
+        extractionSteps: current.extractionSteps.filter((_, stepIndex) => stepIndex !== index),
+      };
+    });
+    setErrors((current) => ({
+      ...current,
+      extractionSteps: undefined,
+      extractionStepErrors: current.extractionStepErrors?.filter((_, stepIndex) => stepIndex !== index),
+    }));
+  };
+
+  const extractionTotals = values.extractionSteps.reduce(
+    (totals, step) => ({
+      pourAmountG: totals.pourAmountG + (Number.isFinite(Number(step.pourAmountG)) ? Number(step.pourAmountG) : 0),
+      waitSec: totals.waitSec + (Number.isFinite(Number(step.waitSec)) ? Number(step.waitSec) : 0),
+    }),
+    { pourAmountG: 0, waitSec: 0 },
+  );
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-6 md:px-8">
@@ -223,6 +284,67 @@ function NewLogPage() {
                 />
               </Field>
             </FieldGroup>
+
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-medium">抽出手順 *</h2>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addExtractionStep}
+                  disabled={values.extractionSteps.length >= 10}
+                >
+                  行を追加
+                </Button>
+              </div>
+              <FieldError>{errors.extractionSteps}</FieldError>
+
+              {values.extractionSteps.map((step, index) => (
+                <FieldGroup key={`step-${index}`} className="grid gap-3 rounded-md border p-3 md:grid-cols-3">
+                  <div className="text-muted-foreground text-sm font-medium md:pt-8">Step {index + 1}</div>
+                  <Field>
+                    <FieldLabel htmlFor={`pourAmountG-${index}`}>注湯(g)</FieldLabel>
+                    <Input
+                      id={`pourAmountG-${index}`}
+                      type="number"
+                      min={1}
+                      max={1000}
+                      value={step.pourAmountG}
+                      onChange={(event) => updateExtractionStep(index, "pourAmountG", event.target.value)}
+                    />
+                    <FieldError>{errors.extractionStepErrors?.[index]?.pourAmountG}</FieldError>
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor={`waitSec-${index}`}>待機(秒)</FieldLabel>
+                    <Input
+                      id={`waitSec-${index}`}
+                      type="number"
+                      min={0}
+                      max={900}
+                      value={step.waitSec}
+                      onChange={(event) => updateExtractionStep(index, "waitSec", event.target.value)}
+                    />
+                    <FieldError>{errors.extractionStepErrors?.[index]?.waitSec}</FieldError>
+                  </Field>
+                  <div className="md:col-span-3">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeExtractionStep(index)}
+                      disabled={values.extractionSteps.length <= 1}
+                    >
+                      この行を削除
+                    </Button>
+                  </div>
+                </FieldGroup>
+              ))}
+
+              <p className="text-muted-foreground text-sm">
+                合計: 注湯 {extractionTotals.pourAmountG}g / 待機 {extractionTotals.waitSec}秒
+              </p>
+            </section>
 
             <Field>
               <FieldLabel htmlFor="tasteMemo">味メモ</FieldLabel>

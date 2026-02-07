@@ -15,6 +15,7 @@ export const coffeeLogs = sqliteTable(
     waterAmountMl: integer("water_amount_ml").notNull(),
     brewTimeSec: integer("brew_time_sec").notNull(),
     waterTempC: integer("water_temp_c").notNull(),
+    extractionSteps: text("extraction_steps").notNull().default("[]"),
     grindMemo: text("grind_memo").notNull().default(""),
     tasteScore: integer("taste_score").notNull(),
     tasteMemo: text("taste_memo").notNull().default(""),
