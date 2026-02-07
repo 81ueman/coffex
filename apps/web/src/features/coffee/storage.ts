@@ -6,13 +6,13 @@ function canUseStorage() {
   return typeof window !== "undefined";
 }
 
-function sortByNewest(logs: CoffeeLog[]) {
+function sortByNewest(logs: Array<CoffeeLog>) {
   return [...logs].sort(
     (a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime(),
   );
 }
 
-export function loadLogs(): CoffeeLog[] {
+export function loadLogs(): Array<CoffeeLog> {
   if (!canUseStorage()) {
     return [];
   }
@@ -24,7 +24,7 @@ export function loadLogs(): CoffeeLog[] {
       return [];
     }
 
-    const parsed = JSON.parse(raw) as CoffeeLog[];
+    const parsed = JSON.parse(raw) as Array<CoffeeLog>;
 
     if (!Array.isArray(parsed)) {
       return [];
@@ -36,7 +36,7 @@ export function loadLogs(): CoffeeLog[] {
   }
 }
 
-export function saveLogs(logs: CoffeeLog[]) {
+export function saveLogs(logs: Array<CoffeeLog>) {
   if (!canUseStorage()) {
     return;
   }

@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { apiClient } from "@/lib/api-client";
 import type { CoffeeLog, CoffeeLogInput } from "@/features/coffee/types";
+import { apiClient } from "@/lib/api-client";
 
 export function useCoffeeLogs() {
-  const [logs, setLogs] = useState<CoffeeLog[]>([]);
+  const [logs, setLogs] = useState<Array<CoffeeLog>>([]);
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {

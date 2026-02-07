@@ -1,7 +1,8 @@
 import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 async function createLog(
-  page: import("@playwright/test").Page,
+  page: Page,
   beanName: string,
   options?: { roastLevel?: string; brewMethod?: string; tasteScore?: string },
 ) {
