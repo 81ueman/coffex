@@ -56,6 +56,10 @@ export const listLogsResponseSchema = z.object({
   total: z.number().int().min(0),
 });
 
+export const logIdParamsSchema = z.object({
+  id: z.string().uuid(),
+});
+
 export type RoastLevel = z.infer<typeof roastLevelSchema>;
 export type BrewMethod = z.infer<typeof brewMethodSchema>;
 export type ExtractionStep = z.infer<typeof extractionStepSchema>;
@@ -63,3 +67,4 @@ export type CoffeeLogInput = z.infer<typeof coffeeLogInputSchema>;
 export type CoffeeLog = z.infer<typeof coffeeLogSchema>;
 export type ListLogsQuery = z.infer<typeof listLogsQuerySchema>;
 export type ListLogsResponse = z.infer<typeof listLogsResponseSchema>;
+export type LogIdParams = z.infer<typeof logIdParamsSchema>;

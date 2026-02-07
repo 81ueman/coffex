@@ -59,6 +59,16 @@ export class CoffeeLogsRepository {
     return nextLog;
   }
 
+  async findById(id: string): Promise<CoffeeLog | null> {
+    const [row] = await this.db.select().from(coffeeLogs).where(eq(coffeeLogs.id, id)).limit(1);
+
+    if (!row) {
+      return null;
+    }
+
+    return rowToCoffeeLog(row);
+  }
+
   async delete(id: string) {
     const result = await this.db.delete(coffeeLogs).where(eq(coffeeLogs.id, id));
 

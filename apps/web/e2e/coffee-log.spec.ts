@@ -88,6 +88,26 @@ test("リロードしても記録が保持される", async ({ page }) => {
   await expect(page.getByRole("cell", { name: beanName })).toBeVisible();
 });
 
+test("一覧から詳細画面に遷移して記録内容を確認できる", async ({ page }) => {
+  const beanName = `PW-DETAIL-${Date.now()}`;
+
+  await createLog(page, beanName, {
+    roastLevel: "中深入り",
+    brewMethod: "French Press",
+    tasteScore: "90",
+  });
+
+  const row = page.locator("tr", { hasText: beanName });
+  await row.getByRole("link", { name: "詳細" }).click();
+
+  await expect(page).toHaveURL(/\/logs\/[0-9a-f-]+$/);
+  await expect(page.getByRole("heading", { name: "記録詳細" })).toBeVisible();
+  await expect(page.getByText(beanName)).toBeVisible();
+  await expect(page.getByText("90点")).toBeVisible();
+  await expect(page.getByText("中深入り")).toBeVisible();
+  await expect(page.getByText("French Press")).toBeVisible();
+});
+
 test("新規作成フォームで必須・範囲バリデーションが表示される", async ({ page }) => {
   await page.goto("/new");
 

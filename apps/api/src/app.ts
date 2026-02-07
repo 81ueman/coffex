@@ -1,16 +1,14 @@
 import {
   coffeeLogInputSchema,
+  coffeeLogSchema,
+  logIdParamsSchema,
   listLogsQuerySchema,
   listLogsResponseSchema,
 } from "@coffex/shared/coffee";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { z } from "zod";
-
 import { CoffeeLogsRepository } from "./features/logs/repository";
-
-const deleteLogParamsSchema = z.object({ id: z.string().uuid() });
 
 type AppDependencies = {
   repository: CoffeeLogsRepository;
@@ -38,7 +36,18 @@ export function createApp(deps: AppDependencies) {
     return c.json(created, 201);
   });
 
-  app.delete("/api/logs/:id", zValidator("param", deleteLogParamsSchema), async (c) => {
+  app.get("/api/logs/:id", zValidator("param", logIdParamsSchema), async (c) => {
+    const { id } = c.req.valid("param");
+    const log = await deps.repository.findById(id);
+
+    if (!log) {
+      return c.json({ message: "Log not found" }, 404);
+    }
+
+    return c.json(coffeeLogSchema.parse(log));
+  });
+
+  app.delete("/api/logs/:id", zValidator("param", logIdParamsSchema), async (c) => {
     const { id } = c.req.valid("param");
     const result = await deps.repository.delete(id);
 
