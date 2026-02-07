@@ -28,6 +28,10 @@ export function useCoffeeLogs() {
         if (!isCancelled) {
           setLogs(payload.items);
         }
+      } catch {
+        if (!isCancelled) {
+          setLogs([]);
+        }
       } finally {
         if (!isCancelled) {
           setIsHydrated(true);
