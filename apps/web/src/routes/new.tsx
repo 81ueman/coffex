@@ -1,6 +1,7 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
+import type {BrewMethod, CoffeeLogInput, RoastLevel} from "@/features/coffee/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -15,10 +16,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   BREW_METHODS,
-  ROAST_LEVELS,
-  type BrewMethod,
-  type CoffeeLogInput,
-  type RoastLevel,
+  
+  
+  ROAST_LEVELS
+  
 } from "@/features/coffee/types";
 import { useCoffeeLogs } from "@/features/coffee/use-coffee-logs";
 
