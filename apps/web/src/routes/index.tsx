@@ -283,7 +283,7 @@ function DashboardPage() {
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => deleteLogRecord(log.id)}>
+                            <AlertDialogAction onClick={() => void deleteLogRecord(log.id)}>
                               削除する
                             </AlertDialogAction>
                           </AlertDialogFooter>

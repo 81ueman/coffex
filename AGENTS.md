@@ -1,9 +1,9 @@
 # AGENTS.md
 
 ## Project Overview
-- This repository is `coffex`, a coffee tasting log app built with TanStack Start + React + shadcn/ui.
-- Current scope is frontend-first mockup without backend.
-- Data persistence is implemented with `localStorage` (`coffex.logs` key).
+- This repository is `coffex`, a coffee tasting log app in a pnpm monorepo.
+- Architecture is split into Web + API + Shared packages.
+- Persistence is server-side SQLite (not localStorage) via Drizzle ORM.
 - Main user flow:
   1. Create a coffee log at `/new`
   2. View/filter logs at `/`
@@ -11,54 +11,65 @@
   4. Confirm data persists after page reload
 
 ## Tech Stack
-- Framework: TanStack Start (`@tanstack/react-router`, file-based routes)
-- UI: shadcn/ui components in `src/components/ui`
-- Styling: Tailwind CSS v4
-- Language: TypeScript
-- Package manager: `pnpm`
-- E2E: Playwright (`e2e/coffee-log.spec.ts`)
+- Monorepo: pnpm workspaces
+- Web: TanStack Start + React + shadcn/ui + Tailwind CSS v4
+- API: Hono + TypeScript
+- DB: SQLite + Drizzle ORM
+- Shared types: Zod schemas in `packages/shared`
+- E2E: Playwright
 
 ## Important Directories
-- `src/routes/`
-  - `index.tsx`: Dashboard (KPI, filters, table, delete)
-  - `new.tsx`: New log form
-- `src/features/coffee/`
-  - `types.ts`: Domain model
-  - `storage.ts`: localStorage CRUD
-  - `use-coffee-logs.ts`: app-level state hook
-- `src/components/ui/`: shadcn components
-- `e2e/`: Playwright E2E tests
+- `apps/web/`
+  - `src/routes/`: UI routes (`index.tsx`, `new.tsx`)
+  - `src/features/coffee/`: UI-facing domain hooks/types
+  - `e2e/coffee-log.spec.ts`: Playwright E2E tests
+- `apps/api/`
+  - `src/app.ts`: Hono route definitions
+  - `src/features/logs/repository.ts`: DB access logic
+  - `src/db/schema.ts`: Drizzle schema
+  - `test/app.test.ts`: API tests (Vitest)
+- `packages/shared/src/coffee.ts`
+  - shared Zod schemas and Coffee domain types
 
 ## Required Commands
 - Install dependencies:
   - `pnpm install`
-- Run dev server:
-  - `pnpm dev`
+- Run dev servers:
+  - `pnpm dev` (web + api)
+  - `pnpm dev:web`
+  - `pnpm dev:api`
 - Build:
   - `pnpm build`
-- Preview production build:
-  - `pnpm preview --host 127.0.0.1 --port 3000`
-- Unit tests (Vitest):
+  - `pnpm build:web`
+  - `pnpm build:api`
+- Tests:
   - `pnpm test`
-- E2E tests (Playwright):
+  - `pnpm test:web`
+  - `pnpm test:api`
   - `pnpm test:e2e`
-  - `pnpm test:e2e:headed`
+
+## Environment Variables
+- API (`apps/api`)
+  - `DATABASE_URL` (default: `./apps/api/data/coffex.db`)
+  - `PORT` (default: `8787`)
+- Web (`apps/web`)
+  - `VITE_API_BASE_URL` (default: `http://127.0.0.1:8787`)
 
 ## E2E Notes
-- Playwright config uses a web server command:
-  - `pnpm build && pnpm preview --host 127.0.0.1 --port 3000`
-- This avoids dev-server plugin port conflicts seen with `pnpm dev` in E2E runs.
+- Playwright starts API and Web preview via `apps/web/playwright.config.ts`.
+- E2E uses API-backed data setup/cleanup (not localStorage clearing).
 - Install browser binaries if needed:
-  - `pnpm exec playwright install chromium`
+  - `pnpm --filter @coffex/web exec playwright install chromium`
 
 ## Coding Guidelines for This Repo
 - Prefer existing shadcn components before creating custom UI components.
 - Keep labels and UX text in Japanese unless there is a strong reason to change.
-- Avoid introducing backend dependencies until explicitly requested.
-- For new features, keep localStorage compatibility unless a migration plan is defined.
+- Keep API/Web contract type-safe through `packages/shared` schemas.
+- For API input/output, prefer shared Zod schemas over ad-hoc types.
+- Keep SQLite + Drizzle compatibility unless a migration plan is defined.
 
 ## Minimum Verification Before Commit
 1. `pnpm build` passes
-2. `pnpm test:e2e` passes (for UI-flow changes)
-3. `git status` is clean except intentional changes
-
+2. `pnpm test:api` passes for API changes
+3. `pnpm test:e2e` passes for UI/API flow changes
+4. `git status` is clean except intentional changes

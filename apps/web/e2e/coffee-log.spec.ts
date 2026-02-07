@@ -17,9 +17,15 @@ async function createLog(page: import("@playwright/test").Page, beanName: string
   await expect(page).toHaveURL("/");
 }
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page, request }) => {
+  const response = await request.get("http://127.0.0.1:8787/api/logs?limit=100&offset=0");
+  const payload = (await response.json()) as { items: Array<{ id: string }> };
+
+  for (const item of payload.items) {
+    await request.delete(`http://127.0.0.1:8787/api/logs/${item.id}`);
+  }
+
   await page.goto("/");
-  await page.evaluate(() => window.localStorage.clear());
 });
 
 test("新規作成した記録が一覧に表示される", async ({ page }) => {

@@ -65,7 +65,7 @@ function NewLogPage() {
   const [values, setValues] = useState<FormValues>(initialValues);
   const [errors, setErrors] = useState<FormErrors>({});
 
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const nextErrors: FormErrors = {};
@@ -134,7 +134,7 @@ function NewLogPage() {
       tasteMemo: values.tasteMemo.trim(),
     };
 
-    addLogRecord(payload);
+    await addLogRecord(payload);
     navigate({ to: "/" });
   };
 
